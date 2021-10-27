@@ -9,6 +9,10 @@ from app import app
 def index():
     return render_template("index.html")
 
+@app.route('/download', methods=['GET', 'POST'])
+def download():
+    return redirect("https://files.romanpeters.nl/s/QAc4cBTGMKcZiQH")
+
 
 
 

@@ -1,8 +1,8 @@
 version: '3'
 services:
   url:
-     image: screenless:latest
-     container_name: screenless
+     image: thesis:latest
+     container_name: thesis
      restart: always
      #volumes:
      #  - ./app:/app

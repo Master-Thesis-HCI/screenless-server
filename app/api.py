@@ -36,13 +36,9 @@ def get_screentime(device_id):
 @app.route("/api/<string:device_id>/", methods=['POST'])
 def set_screentime(device_id):
     """Set device screentime information"""
-    print(request)
+    if not request.json or 'screentime' not in request.json:
+        return abort(400)
     print(request.json)
-    print(request.data)
-
-
-    #if not request.json or 'screentime' not in request.json:
-    #    return abort(400)
     #updated = datetime.datetime.now()
     #session = db.Session()
     #device_entry = db.Devices(device_id=device_id,
@@ -51,7 +47,7 @@ def set_screentime(device_id):
     #session.merge(device_entry)
     #session.commit()
     #return jsonify(device_info(device_entry))
-    return jsonify({"success": True}
+    return jsonify({"success": True})
 
 
 endpoints = [{"path": "/api/",
