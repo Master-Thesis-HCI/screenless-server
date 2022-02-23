@@ -12,10 +12,6 @@ class AppData:
     system: bool = False
     count: int = 0
 
-    def show(self):
-        print(f"{self.name}: time={self.time_}, total={self.total}, count={self.count}")
-
-
 def parse_android_data(android_data: str) -> list:
     result = list()
     # get chars between brackets using regex
@@ -53,10 +49,11 @@ def parse_android_data(android_data: str) -> list:
         result.append(app_data)
     return result
 
+
 def debug():
     x = '[name:Mint Launcher package_name:com.mi.android.go.globallauncher time:1635370016299 total:9504053 type:0 system:false count:25, name:Chrome package_name:com.android.chrome time:1635354235624 total:3729888 type:0 system:false count:4, name:Camera package_name:com.android.camera time:1635352907159 total:31604 type:0 system:false count:2, name:Google Play Store package_name:com.android.vending time:1635337968473 total:19109 type:0 system:false count:2, name:Google Go package_name:com.google.android.apps.searchlite time:1635352571825 total:3497 type:0 system:false count:0, name:Calendar package_name:com.google.android.calendar time:1635352513294 total:1654 type:0 system:false count:0, name:Photos package_name:com.google.android.apps.photos time:1635352575421 total:948 type:0 system:false count:0]'
     data = parse_android_data(x)
     for d in data:
-        d.show()
+        print(d)
 
 debug()

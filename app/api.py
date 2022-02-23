@@ -3,6 +3,7 @@ from flask import request, jsonify, abort
 import datetime
 
 from app import database as db
+from app import visual, file_io
 from app import app
 
 
@@ -13,23 +14,14 @@ def endpoints():
     return jsonify({'endpoints': endpoints})
 
 
-def device_info(entry: db.Devices) -> dict:
-    result = {"device_id": entry.device_id,
-              "screentime": entry.screentime,
-              "updated": entry.updated}
-    return result
-
-
 @app.route("/api/<string:device_id>", methods=['GET'])
 @app.route("/api/<string:device_id>/", methods=['GET'])
 def get_screentime(device_id):
     """Get device screentime information"""
-    session = db.Session()
-    device_entry = session.query(db.Devices).filter_by(device_id=device_id).first()
-    session.close()
+    device_entry = visual.frame_from_file(device_id)
     if not device_entry:
         return abort(404)
-    return jsonify(device_info(device_entry))
+    return jsonify(device_entry)
 
 
 @app.route("/api/<string:device_id>", methods=['POST'])
@@ -39,14 +31,11 @@ def set_screentime(device_id):
     if not request.json or 'screentime' not in request.json:
         return abort(400)
     print(request.json)
-    #updated = datetime.datetime.now()
-    #session = db.Session()
-    #device_entry = db.Devices(device_id=device_id,
-    #                          screentime=request.json['screentime'],
-    #                          updated=updated)
-    #session.merge(device_entry)
-    #session.commit()
-    #return jsonify(device_info(device_entry))
+    appdata = request.json["screentime"]
+    update_ts = visual.current_timestamp()
+    file_io.appdata_to_apps_file(appdata=appdata, device_id=device_id, update_ts=update_ts)  #TODO DEBUG
+    file_io.appdata_to_updates_file(appdata=appdata, device_id=device_id, update_ts=update_ts)
+    visual.update_frame(device_id)
     return jsonify({"success": True})
 
 
