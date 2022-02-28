@@ -14,6 +14,13 @@ def endpoints():
     return jsonify({'endpoints': endpoints})
 
 
+@app.route("/api/show", methods=['GET'])
+@app.route("/api/show/", methods=['GET'])
+def show():
+    """Show database entries (hidden)"""
+    return jsonify({'entries': file_io.list_ids()})
+
+
 @app.route("/api/<string:device_id>", methods=['GET'])
 @app.route("/api/<string:device_id>/", methods=['GET'])
 def get_screentime(device_id):
@@ -37,6 +44,8 @@ def set_screentime(device_id):
     file_io.appdata_to_updates_file(appdata=appdata, device_id=device_id, update_ts=update_ts)
     visual.update_frame(device_id)
     return jsonify({"success": True})
+
+
 
 
 endpoints = [{"path": "/api/",

@@ -5,13 +5,17 @@ from collections import namedtuple
 
 from app.data_processing import AppData
 
-FILE_PATH_DATA = "./data"
+FILE_PATH_DATA = "./app/data"
 UPDATES_FILE_HEADERS: list = ["timestamp", "apps_used", "total_minutes"]
 
 
 def ensure_dir(path: str):
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def list_ids():
+    return [f for f in os.listdir(FILE_PATH_DATA) if not f.startswith(".")]
 
 
 def appdata_to_apps_file(appdata: [AppData], device_id: str, update_ts: int):

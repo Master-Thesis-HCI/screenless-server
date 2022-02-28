@@ -16,6 +16,9 @@ class Pixel:
     green: int
     blue: int
 
+    def flat(self):
+        return (self.red, self.green, self.blue)
+
 
 @dataclass
 class Window:
@@ -33,7 +36,7 @@ class Frame:
     def toJSON(self) -> str:
         return json.dumps({'timestamp': self.timestamp,
                            'device_id': self.device_id,
-                           'pixels': self.pixels})
+                           'pixels': {k: v.flat() for k, v in self.pixels.items()}})
 
 
 def get_pixel(color: str, intensity: float):
@@ -84,10 +87,10 @@ def get_windows() -> dict:
     stop_ts = current_timestamp()  # closing value
 
     windows = {}
-    for i, ts in enumerate(range(start=start_ts+step, stop=stop_ts, step=SECONDS_PER_PIXEL)):
+    for i, ts in enumerate(range(start_ts+SECONDS_PER_PIXEL, stop_ts, SECONDS_PER_PIXEL)):
         windows[i] = ts
     else:
-        windows[i+1](stop_ts)
+        windows[i+1] = stop_ts
 
     print(windows)  # debug
     return windows
@@ -116,17 +119,21 @@ def updates_to_frame(updates: list, device_id: str) -> Frame:
     frame = Frame(timestamp=current_timestamp(), device_id=device_id, pixels=pixels)
     return frame
 
+
 def frame_to_file(frame: Frame):
-    file_path = f"data/{frame.device_id}/frame.json"
+    file_path = f"app/data/{frame.device_id}/frame.json"
     with open(file_path, "w+") as f:
         f.write(frame.toJSON())
 
 
 def frame_from_file(device_id: str) -> Frame:
-    file_path = f"data/{device_id}/frame.json"
+    data_dir = f"app/data/{device_id}"
+    file_path = f"{data_dir}/frame.json"
+    if not os.path.exists(data_dir):
+        print("no device info")
+        return Frame(timestamp=current_timestamp(), device_id=device_id, pixels={})
     if not os.path.exists(file_path):
-        print("no frame file")
-        return Frame(timestamp=current_timestamp(), device_id=device_id)
+        update_frame(device_id)
     with open(file_path, "r") as f:
         file_dict = json.loads(f.read())
     return Frame(timestamp=file_dict["timestamp"],
