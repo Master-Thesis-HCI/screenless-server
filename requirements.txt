@@ -1,3 +1,4 @@
 Flask==1.1.2
 SQLAlchemy==1.4.2
 pytest==6.2.2
+webcolors==1.11.1
