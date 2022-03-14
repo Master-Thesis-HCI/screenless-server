@@ -27,6 +27,7 @@ def appdata_to_apps_file(appdata: [AppData], device_id: str, update_ts: int):
     file_path: str = f"{user_path}/apps.csv"
     file_exists: bool = os.path.exists(file_path)
     write_headers: bool = False if file_exists else True
+    print(appdata)  # debug below doesn't work :(
     headers: list = ["timestamp"] + [h.replace("_", " ").strip() for h in appdata[0].__dict__.keys()]
 
     if file_exists:

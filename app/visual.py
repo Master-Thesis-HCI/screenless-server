@@ -6,7 +6,9 @@ import json
 import os
 import webcolors
 
-COLOR = "white"
+COLOR = webcolors.name_to_rgb("white")
+NO_DATA = webcolors.name_to_rgb("green")
+ERROR = webcolors.name_to_rgb("red")
 SECONDS_PER_PIXEL = 900
 
 
@@ -40,8 +42,8 @@ class Frame:
 
 
 def get_pixel(color: str, intensity: float):
-    """Converts a color name and brightness to a Pixel"""
-    return Pixel(*[i*intensity for i in webcolors.name_to_rgb(color)])
+    """Converts a color and brightness to a Pixel"""
+    return Pixel(*[i*intensity for i in color])
 
 
 def start_timestamp() -> int:
@@ -115,7 +117,8 @@ def updates_to_frame(updates: list, device_id: str) -> Frame:
         brightness = delta/SECONDS_PER_PIXEL
         pixel = get_pixel(COLOR, brightness)
         pixels[i] = pixel
-
+    if not pixels:
+        pixels = {49: NO_DATA}  # status light
     frame = Frame(timestamp=current_timestamp(), device_id=device_id, pixels=pixels)
     return frame
 
@@ -131,7 +134,7 @@ def frame_from_file(device_id: str) -> Frame:
     file_path = f"{data_dir}/frame.json"
     if not os.path.exists(data_dir):
         print("no device info")
-        return Frame(timestamp=current_timestamp(), device_id=device_id, pixels={})
+        return Frame(timestamp=current_timestamp(), device_id=device_id, pixels={49: ERROR})  # status light
     if not os.path.exists(file_path):
         update_frame(device_id)
     with open(file_path, "r") as f:
