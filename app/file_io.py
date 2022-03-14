@@ -13,6 +13,7 @@ def ensure_dir(path: str):
     if not os.path.exists(path):
         os.makedirs(path)
 
+ensure_dir(FILE_PATH_DATA)
 
 def list_ids():
     return [f for f in os.listdir(FILE_PATH_DATA) if not f.startswith(".")]

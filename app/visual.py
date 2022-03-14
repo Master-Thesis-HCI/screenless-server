@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-import time
 import csv
 import json
 import os
@@ -16,7 +15,7 @@ class Pixel:
     green: int
     blue: int
 
-    def flat(self):
+    def flatten(self) -> tuple:
         return (self.red, self.green, self.blue)
 
 
@@ -36,7 +35,7 @@ class Frame:
     def toJSON(self) -> str:
         return json.dumps({'timestamp': self.timestamp,
                            'device_id': self.device_id,
-                           'pixels': {k: v.flat() for k, v in self.pixels.items()}})
+                           'pixels': {k: v.flatten() for k, v in self.pixels.items()}})
 
 
 def get_pixel(color: str, intensity: float):
@@ -45,8 +44,9 @@ def get_pixel(color: str, intensity: float):
 
 
 def start_timestamp() -> int:
-    """returns the timestamp of today at 00:00 as int"""
-    return int(datetime.now().replace(hour=0, minute=0, second=0).timestamp())
+    """returns the timestamp of today at 00:00 or 12:00 as int"""
+    hour = 0 if datetime.now().hour < 12 else 12
+    return int(datetime.now().replace(hour=hour, minute=0, second=0).timestamp())
 
 
 def current_timestamp() -> int:
