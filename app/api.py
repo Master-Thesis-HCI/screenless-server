@@ -2,8 +2,7 @@ from urllib.parse import urlparse
 from flask import request, jsonify, abort
 import datetime
 from app import database as db
-from app import visual, file_io
-from app import app
+from app import visual, file_io, data_processing, app
 
 
 @app.route("/api/", methods=['GET'])
@@ -32,10 +31,10 @@ def set_screentime(device_id):
     """Set device screentime information"""
     if not request.json or 'screentime' not in request.json:
         return abort(400)
-    print(request.json)
-    appdata = request.json["screentime"]  #TODO parse?
+    appdata = data_processing.parse_android_data(request.json["screentime"])  #TODO 
+    print("apppdata:", appdata)  #DEBUG
     update_ts = visual.current_timestamp()
-    #file_io.appdata_to_apps_file(appdata=appdata, device_id=device_id, update_ts=update_ts)  #TODO DEBUG
+    file_io.appdata_to_apps_file(appdata=appdata, device_id=device_id, update_ts=update_ts)  #TODO DEBUG
     file_io.appdata_to_updates_file(appdata=appdata, device_id=device_id, update_ts=update_ts)
     visual.update_frame(device_id)
     return jsonify({"success": True})

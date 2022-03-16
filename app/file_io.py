@@ -5,8 +5,8 @@ from collections import namedtuple
 
 from app.data_processing import AppData
 
-FILE_PATH_DATA = "./app/data"
-UPDATES_FILE_HEADERS: list = ["timestamp", "apps_used", "total_minutes"]
+FILE_PATH_DATA = "./data"
+UPDATES_FILE_HEADERS: list = ["timestamp", "apps_used", "total_seconds"]
 
 
 def ensure_dir(path: str):
@@ -55,15 +55,15 @@ def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int):
     file_exists: bool = os.path.exists(file_path)
     write_headers: bool = False if file_exists else True
 
-    total_minutes = int(sum([app.total for app in appdata]) * 0.000006)
-    row = [str(update_ts), len(appdata), total_minutes]
+    total_seconds = int(sum([app.total for app in appdata])/1000) # * 0.000006)
+    row = [str(update_ts), len(appdata), total_seconds]
 
     if file_exists:
         with open(file_path, "r") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for file_row in csv_reader:
                 pass
-            if file_row[-1] == str(total_minutes):  # last value of last line
+            if file_row[-1] == str(total_seconds):  # last value of last line
                 return                              # return if value is not changed
 
     with open(file_path, "a+") as csv_file:

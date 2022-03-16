@@ -5,6 +5,10 @@ import json
 import os
 import webcolors
 
+DATA_DIR = "./data"
+if not os.path.exists(DATA_DIR):
+    print("wrning!", DATA_DIR, "not in", os.getcwd())
+
 COLOR = webcolors.name_to_rgb("white")
 NO_DATA = webcolors.name_to_rgb("green")
 ERROR = webcolors.name_to_rgb("red")
@@ -42,7 +46,7 @@ class Frame:
 
 def get_pixel(color: str, intensity: float):
     """Converts a color and brightness to a Pixel"""
-    return Pixel(*[i*intensity for i in color])
+    return Pixel(*[int(i*intensity) for i in color])
 
 
 def start_timestamp() -> int:
@@ -57,7 +61,7 @@ def current_timestamp() -> int:
 
 
 def load_updates(device_id: str) -> list:
-    file_path = f"data/{device_id}/updates.csv"
+    file_path = f"{DATA_DIR}/{device_id}/updates.csv"
     if not os.path.exists(file_path):
         print("no path to device_id")
         return list()
@@ -78,8 +82,8 @@ def load_updates(device_id: str) -> list:
                     line.append(i)
 
             # today only
-            if line[0] > start_ts:
-                entries.append(line)
+            #if line[0] > start_ts:
+            entries.append(line)
     return entries
 
 
@@ -98,10 +102,24 @@ def get_windows() -> dict:
     return windows
 
 
+
+def get_total_screentime_before_start_window(updates: list) -> int:
+    start_ts = start_timestamp()
+    result = 0
+    if len(updates) < 2:
+        return result
+    
+    for i, entry in enumerate(updates):
+        if entry[0] >= start_ts:
+            result = updates[i-1][2]  # total screentime of previous entry
+            print("result =", result)
+    return int(result)
+
+
 def updates_to_frame(updates: list, device_id: str) -> Frame:
     windows = get_windows()
 
-    total_screentime = 0  # assuming 0 at 00:00
+    total_screentime = get_total_screentime_before_start_window(updates)
     pixels = {}
     for i, ts in windows.items():
         window_measurement = total_screentime
@@ -112,6 +130,12 @@ def updates_to_frame(updates: list, device_id: str) -> Frame:
             else:
                 break
         delta = window_measurement - total_screentime  # screentime within window
+        
+        # DEBUG Test with full brightness
+        #if delta != 0:
+        #    print("delta:", delta)
+        #    delta = SECONDS_PER_PIXEL
+
         total_screentime = window_measurement  # set to max within window
 
         brightness = delta/SECONDS_PER_PIXEL
@@ -124,15 +148,15 @@ def updates_to_frame(updates: list, device_id: str) -> Frame:
 
 
 def frame_to_file(frame: Frame):
-    file_path = f"app/data/{frame.device_id}/frame.json"
+    file_path = f"{DATA_DIR}/{frame.device_id}/frame.json"
     with open(file_path, "w+") as f:
         f.write(frame.toJSON())
 
 
 def frame_from_file(device_id: str) -> Frame:
-    data_dir = f"app/data/{device_id}"
-    file_path = f"{data_dir}/frame.json"
-    if not os.path.exists(data_dir):
+    device_dir = f"{DATA_DIR}/{device_id}"
+    file_path = f"{device_dir}/frame.json"
+    if not os.path.exists(device_dir):
         print("no device info")
         return Frame(timestamp=current_timestamp(), device_id=device_id, pixels={49: ERROR})  # status light
     if not os.path.exists(file_path):
