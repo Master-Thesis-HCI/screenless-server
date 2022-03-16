@@ -6,19 +6,19 @@ from app import visual, file_io
 from app import app
 
 
-@app.route("/api", methods=['GET'])
+@app.route("/api/", methods=['GET'])
 def endpoints():
     """Overview of the API endpoints."""
     return jsonify({'endpoints': endpoints})
 
 
-@app.route("/api/show", methods=['GET'])
+@app.route("/api/show/", methods=['GET'])
 def show():
     """Show database entries (hidden)"""
     return jsonify({'entries': file_io.list_ids()})
 
 
-@app.route("/api/<string:device_id>", methods=['GET'])
+@app.route("/api/<string:device_id>/", methods=['GET'])
 def get_screentime(device_id):
     """Get device screentime information"""
     device_entry = visual.frame_from_file(device_id)
@@ -27,7 +27,7 @@ def get_screentime(device_id):
     return jsonify(device_entry)
 
 
-@app.route("/api/<string:device_id>", methods=['POST'])
+@app.route("/api/<string:device_id>/", methods=['POST'])
 def set_screentime(device_id):
     """Set device screentime information"""
     if not request.json or 'screentime' not in request.json:
@@ -41,7 +41,7 @@ def set_screentime(device_id):
     return jsonify({"success": True})
 
 
-@app.route("/api/<string:device_id>/grid", methods=['GET'])
+@app.route("/api/<string:device_id>/grid/", methods=['GET'])
 def get_grid(device_id):
     """Get device screentime information"""
     device_entry = visual.frame_from_file(device_id)
