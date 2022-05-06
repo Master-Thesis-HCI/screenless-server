@@ -1,8 +1,8 @@
 version: '3'
 services:
   url:
-     image: thesis:latest
-     container_name: thesis
+     image: screenless-server:latest
+     container_name: screenless-server
      restart: always
      volumes:
        - ./data:/app/data

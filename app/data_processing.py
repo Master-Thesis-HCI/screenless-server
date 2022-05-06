@@ -12,7 +12,7 @@ class AppData:
     system: bool = False
     count: int = 0
 
-def parse_android_data(android_data: str) -> list:
+def parse_android_data(android_data: str) -> [AppData]:
     result = list()
     # get chars between brackets using regex
     apps = re.match('\[(.* ?)\]', android_data).group(1).split(',')
@@ -56,4 +56,3 @@ def debug():
     for d in data:
         print(d)
 
-debug()
