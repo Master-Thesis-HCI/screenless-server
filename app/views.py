@@ -1,13 +1,12 @@
-from urllib.parse import urlparse
-from flask import render_template, redirect, request
+from flask import render_template, redirect
 
-from app import database as db
 from app import app
 
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
     return render_template("index.html")
+
 
 @app.route('/download', methods=['GET', 'POST'])
 def download():

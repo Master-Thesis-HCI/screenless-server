@@ -45,7 +45,7 @@ def appdata_to_apps_file(appdata: [AppData], device_id: str, update_ts: int):
             csv_writer.writerow([str(update_ts)] + list(asdict(entry).values()))
 
 
-def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int):
+def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int) -> int:
     """The file updates.csv contains combined information for each update"""
     user_path: str = f"{FILE_PATH_DATA}/{device_id}"  # w: platform specific
     if not os.path.exists(user_path):
@@ -70,6 +70,8 @@ def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int):
         if write_headers:
             csv_writer.writerow(UPDATES_FILE_HEADERS)
         csv_writer.writerow(row)
+
+    return int(total_minutes /60)
 
 
 def last_update_from_file(device_id: str) -> [str]:
