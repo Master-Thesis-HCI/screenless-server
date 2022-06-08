@@ -4,7 +4,6 @@ Turns out visual.py didn't work reliably
 """
 import datetime
 import os.path
-import time
 import json
 from dataclasses import dataclass
 
@@ -154,7 +153,11 @@ def get_current_window_index(frame: Frame) -> int or None:
 def get_frame(device_id: str):
     """Loads the frame from file and makes a Python object from it"""
 
-    file_path = f"{DATA_DIR}/{device_id}/frame.json"
+    device_id_path = f"{DATA_DIR}/{device_id}"
+    if not os.path.exists(device_id_path):
+        return None
+
+    file_path = f"{device_id_path}/frame.json"
     if not os.path.exists(file_path):
         # create new frame
         frame = create_empty_frame(device_id)
@@ -164,10 +167,10 @@ def get_frame(device_id: str):
     return json_to_frame(frame_json)
 
 
-
 def set_frame(frame: Frame):
     """Converts the frame to json and writes it to file"""
     file_path = f"{DATA_DIR}/{frame.device_id}/frame.json"
+    print(">>", os.getcwd())
     jsn = frame_to_json(frame)
     with open(file_path, 'w+') as f:
         f.write(jsn)

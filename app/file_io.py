@@ -72,7 +72,7 @@ def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int) 
             csv_writer.writerow(UPDATES_FILE_HEADERS)
         csv_writer.writerow(row)
 
-    return int(total_minutes /60)
+    return int(total_seconds /60)
 
 
 def last_update_from_file(device_id: str) -> [str]:
