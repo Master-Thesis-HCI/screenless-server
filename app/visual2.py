@@ -13,7 +13,7 @@ import webcolors
 WINDOW_SIZE = 900  # seconds; 15 minutes
 TOTAL_PIXELS = 48
 COLOR = "white"
-DATA_DIR = "app/data"
+DATA_DIR = "/app/data"
 
 
 @dataclass
