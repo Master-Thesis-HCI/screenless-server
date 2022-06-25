@@ -1,7 +1,7 @@
 import time
 
 from flask import request, jsonify, abort
-from app import visual2, file_io, app
+from app import visual2, file_io, data_processing, app
 
 
 @app.route("/api/", methods=['GET'])
@@ -31,7 +31,9 @@ def set_screentime(device_id):
     if not request.json or 'screentime' not in request.json:
         return abort(400)
     print(request.json)
-    appdata = request.json["screentime"]
+    android_data = request.json["screentime"]
+    appdata = data_processing.parse_android_data(android_data)
+
     # file_io.appdata_to_apps_file(appdata=appdata, device_id=device_id, update_ts=update_ts)  #TODO DEBUG
 
     # write to file and get current screentime

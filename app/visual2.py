@@ -16,31 +16,15 @@ DATA_DIR = "/app/data"
 
 
 @dataclass
-class Window:
-    """Time frame in which screentime gets registered
-    can be visualised using a pixel"""
-    index: int
-    start: datetime.datetime
-    stop: datetime.datetime
-    pixel: (int, int, int) = tuple()
-    screentime: int = 0
-    init_screentime: int = 0
-    total_screentime: int = 0
-
-
-@dataclass
 class Frame:
     """Collection of all the time windows at a specific moment"""
     timestamp: int
     device_id: str
-    windows: {int: Window}
+    windows: {int: dict}
 
 
 def frame_to_json(frame: Frame):
     jsn = frame.__dict__
-
-    # Window classes to dict
-    jsn["windows"] = {key: value.__dict__ for key, value in jsn["windows"].items()}
 
     # datetime ojects to str
     def converter(o):
@@ -75,7 +59,6 @@ def on_update(device_id, screentime):
     if not os.path.exists(f"data/{device_id}"):
         os.makedirs(f"data/{device_id}")
 
-
     frame = get_frame(device_id)
     window_index = get_current_window_index(frame)
 
@@ -90,27 +73,28 @@ def on_update(device_id, screentime):
     current_window = frame.windows[window_index]
 
     # set init screentime
-    if current_window.init_screentime == 0:
+    if current_window["init_screentime"] == 0:
         # current window screentime is empty
         try:
             # take previous window screentime
-            current_window.init_screentime = windows[window_index-1].total_screentime
+            current_window["init_screentime"] = windows[str(int(window_index)-1)]["total_screentime"]
         except IndexError:
             # first window of the frame
             # keep init_screentime 0
             pass
 
-    window_screentime = screentime - windows[window_index].init_screentime  # diff screentime
+    print('screentime', screentime)
+    window_screentime = screentime - windows[window_index]["init_screentime"] # diff screentime
     assert window_screentime >= 0
 
     # set screentime
-    current_window.screentime = window_screentime
+    current_window["screentime"] = window_screentime
 
     # set total_screentime
-    current_window.total_screentime = current_window.init_screentime + window_screentime
+    current_window["total_screentime"] = current_window["init_screentime"] + window_screentime
 
     # set pixel
-    current_window.pixel = screentime_to_pixel(window_screentime)
+    current_window["pixel"] = screentime_to_pixel(window_screentime)
 
     frame.windows[window_index] = current_window  # update the current window
     set_frame(frame)
@@ -120,7 +104,6 @@ def screentime_to_pixel(window_screentime) -> tuple:
     """Converts a color name and brightness to a Pixel"""
     intensity = window_screentime / WINDOW_SIZE
     rgb = tuple(i * intensity for i in webcolors.name_to_rgb(COLOR))
-    print(rgb)
     return rgb
 
 
@@ -141,13 +124,14 @@ def create_empty_frame(device_id) -> Frame:
 def get_current_window_index(frame: Frame) -> int or None:
     """Get the index from the window currently active"""
     now = datetime.datetime.now()
-    i = None
-    for window in frame.windows:
-        if window.stop > now:
+    result = None
+    for window_index in frame.windows.keys():
+        window = frame.windows[window_index]
+        if window["stop"] > now:
             break
-        i += 1
-    print("Current window/pixel index", i)  #DEBUG
-    return i
+        result = window_index
+    print("Current window/pixel index", result)  #DEBUG
+    return result
 
 
 def get_frame(device_id: str):
