@@ -11,7 +11,9 @@ import webcolors
 
 WINDOW_SIZE = 900  # seconds; 15 minutes
 TOTAL_PIXELS = 48
-COLOR = "darkblue"
+COLOR = "lightblue"
+MINIMUM_INTENSITY = 0.5
+MAXIMUM_INTENSITY = 1
 DATA_DIR = "/app/data"
 
 
@@ -113,8 +115,10 @@ def screentime_to_pixel(window_screentime) -> tuple:
     """Converts a color name and brightness to a Pixel"""
     intensity = window_screentime / WINDOW_SIZE
 
-    # increase intensity by a factor of 2
-    intensity = intensity * 2
+    # Adjust intensiyt to be between MINIMUM_INTENSITY and MAXIMUM_INTENSITY
+    intensity_range = MAXIMUM_INTENSITY - MINIMUM_INTENSITY
+    intensity = intensity * intensity_range + MINIMUM_INTENSITY
+    assert intensity >= MINIMUM_INTENSITY and intensity <= MAXIMUM_INTENSITY
 
     rgb = tuple(int(i * intensity) for i in webcolors.name_to_rgb(COLOR))
     return rgb
