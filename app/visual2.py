@@ -11,7 +11,7 @@ import webcolors
 
 WINDOW_SIZE = 900  # seconds; 15 minutes
 TOTAL_PIXELS = 48
-COLOR = "white"
+COLOR = "darkblue"
 DATA_DIR = "/app/data"
 
 
@@ -56,35 +56,44 @@ def json_to_frame(jsn: str):
 def on_update(device_id, screentime):
     """Android app update comes in -> update to a new frame"""
     # ensure data dir for id
-    if not os.path.exists(f"data/{device_id}"):
-        os.makedirs(f"data/{device_id}")
+    if not os.path.exists(f"{DATA_DIR}/{device_id}"):
+        os.makedirs(f"{DATA_DIR}/{device_id}")
 
     frame = get_frame(device_id)
     window_index = get_current_window_index(frame)
 
     if not window_index:  # frame has expired
+        archive_frame(frame)
         frame = create_empty_frame(device_id)
         set_frame(frame)
         window_index = get_current_window_index(frame)
 
     assert window_index != None
 
-    windows = frame.windows
     current_window = frame.windows[window_index]
 
     # set init screentime
-    if current_window["init_screentime"] == 0:
+    if current_window["init_screentime"] == None:
         # current window screentime is empty
         try:
             # take previous window screentime
-            current_window["init_screentime"] = windows[str(int(window_index)-1)]["total_screentime"]
+            for i in range(0, int(window_index)):  # iterate over previous windows
+                if frame.windows[str(i)]["total_screentime"] != None:
+                    print(f"Previous window {i} has screentime {frame.windows[str(i)]['total_screentime']}, using it")
+                    current_window["init_screentime"] = frame.windows[str(i)]["total_screentime"]
+            # all previous windows are empty
+            if current_window["init_screentime"] == None:
+                current_window["init_screentime"] = 0
         except IndexError:
             # first window of the frame
-            # keep init_screentime 0
+            current_window["init_screentime"] = 0
+            print("first window, set init_screentime 0")
             pass
 
+    assert type(current_window["init_screentime"]) == int
+
     print('screentime', screentime)
-    window_screentime = screentime - windows[window_index]["init_screentime"] # diff screentime
+    window_screentime = screentime - frame.windows[str(window_index)]["init_screentime"] # diff screentime
     assert window_screentime >= 0
 
     # set screentime
@@ -103,11 +112,16 @@ def on_update(device_id, screentime):
 def screentime_to_pixel(window_screentime) -> tuple:
     """Converts a color name and brightness to a Pixel"""
     intensity = window_screentime / WINDOW_SIZE
-    rgb = tuple(i * intensity for i in webcolors.name_to_rgb(COLOR))
+
+    # increase intensity by a factor of 2
+    intensity = intensity * 2
+
+    rgb = tuple(int(i * intensity) for i in webcolors.name_to_rgb(COLOR))
     return rgb
 
 
 def create_empty_frame(device_id) -> Frame:
+    print("Creating empty frame")
     now = datetime.datetime.now()
     frame = Frame(timestamp=int(now.timestamp()), device_id=device_id, windows=dict())
     start_hour = 0 if now.hour < 12 else 12
@@ -116,7 +130,7 @@ def create_empty_frame(device_id) -> Frame:
     for index, seconds_offset in enumerate(range(0, WINDOW_SIZE*TOTAL_PIXELS, WINDOW_SIZE)):
         start = frame_start+datetime.timedelta(0, seconds_offset)
         stop = start + datetime.timedelta(0, WINDOW_SIZE)
-        windows[index] = Window(index=index, start=start, stop=stop)
+        windows[index] = dict(index=index, start=start, stop=stop, init_screentime=None, screentime=None, total_screentime=None, pixel=(0, 0, 0)) # empty window
     frame.windows = windows
     return frame
 
@@ -127,7 +141,7 @@ def get_current_window_index(frame: Frame) -> int or None:
     result = None
     for window_index in frame.windows.keys():
         window = frame.windows[window_index]
-        if window["stop"] > now:
+        if window["start"] > now:
             break
         result = window_index
     print("Current window/pixel index", result)  #DEBUG
@@ -150,11 +164,14 @@ def get_frame(device_id: str):
         frame_json = f.read()
     return json_to_frame(frame_json)
 
+def archive_frame():
+    """Renames the current frame file to an archive file with incremental id"""
+    print("Archiving frame")
+    os.rename(f"{DATA_DIR}/frame.json", f"{DATA_DIR}/frame.json.{datetime.datetime.now().timestamp()}")
 
 def set_frame(frame: Frame):
     """Converts the frame to json and writes it to file"""
     file_path = f"{DATA_DIR}/{frame.device_id}/frame.json"
-    print(">>", os.getcwd())
     jsn = frame_to_json(frame)
     with open(file_path, 'w+') as f:
         f.write(jsn)

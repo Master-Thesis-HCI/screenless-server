@@ -30,14 +30,16 @@ def set_screentime(device_id):
     """Set device screentime information"""
     if not request.json or 'screentime' not in request.json:
         return abort(400)
-    print(request.json)
+    #print(request.json)
     android_data = request.json["screentime"]
     appdata = data_processing.parse_android_data(android_data)
+    print(appdata)
 
     # file_io.appdata_to_apps_file(appdata=appdata, device_id=device_id, update_ts=update_ts)  #TODO DEBUG
 
     # write to file and get current screentime
     screentime_secs = file_io.appdata_to_updates_file(appdata=appdata, device_id=device_id, update_ts=int(time.time()))
+    print("screentime_secs:", screentime_secs)
 
     # update frame
     visual2.on_update(device_id=device_id, screentime=screentime_secs)

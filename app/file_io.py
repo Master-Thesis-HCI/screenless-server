@@ -64,7 +64,7 @@ def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int) 
             for file_row in csv_reader:
                 pass
             if file_row[-1] == str(total_seconds):  # last value of last line
-                return int(total_seconds /60)       # return if value is not changed
+                return int(total_seconds)       # return if value is not changed
 
     with open(file_path, "a+") as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',')
@@ -72,7 +72,7 @@ def appdata_to_updates_file(appdata: [AppData], device_id: str, update_ts: int) 
             csv_writer.writerow(UPDATES_FILE_HEADERS)
         csv_writer.writerow(row)
 
-    return int(total_seconds /60)
+    return int(total_seconds)
 
 
 def last_update_from_file(device_id: str) -> [str]:
