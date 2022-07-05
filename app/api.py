@@ -28,9 +28,10 @@ def get_screentime(device_id):
 @app.route("/api/<string:device_id>/", methods=['POST'])
 def set_screentime(device_id):
     """Set device screentime information"""
-    if not request.json or 'screentime' not in request.json:
+    print(request.json)
+    if not request.json or request.json.get('screentime') is None or request.json.get('screentime') == '[]':
+        print('No screentime data received')
         return abort(400)
-    #print(request.json)
     android_data = request.json["screentime"]
     appdata = data_processing.parse_android_data(android_data)
     print(appdata)
